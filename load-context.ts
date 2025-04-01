@@ -23,7 +23,7 @@ type GetLoadContextArgs = {
 };
 
 export function getLoadContext({ context }: GetLoadContextArgs) {
-  const db = drizzle(context.cloudflare.env.DB, { schema });
+  const db = drizzle(context.cloudflare.env.D1, { schema });
 
   return {
     cloudflare: context.cloudflare,

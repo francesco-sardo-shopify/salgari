@@ -1,27 +1,24 @@
-import { Form, useNavigation } from "react-router";
+import { Form, useNavigation, Link } from "react-router";
+import * as schema from "~/database/schema";
+import type { InferSelectModel } from "drizzle-orm";
 
 import logoDark from "./logo-dark.svg";
 import logoLight from "./logo-light.svg";
 
-export function Welcome({
-  guestBook,
-  guestBookError,
+export function EbookLibrary({
+  ebooks,
   message,
 }: {
-  guestBook: {
-    name: string;
-    id: number;
-  }[];
-  guestBookError?: string;
+  ebooks: InferSelectModel<typeof schema.ebooks>[];
   message: string;
 }) {
   const navigation = useNavigation();
 
   return (
-    <main className="flex items-center justify-center pt-16 pb-4">
-      <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
-        <header className="flex flex-col items-center gap-9">
-          <div className="w-[500px] max-w-[100vw] p-4">
+    <main className="flex flex-col items-center pt-16 pb-4 px-4">
+      <div className="flex-1 flex flex-col items-center gap-8 w-full max-w-6xl">
+        <header className="flex flex-col items-center gap-6">
+          <div className="w-[300px] max-w-[100vw]">
             <img
               src={logoLight}
               alt="React Router"
@@ -33,80 +30,51 @@ export function Welcome({
               className="hidden w-full dark:block"
             />
           </div>
+          <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white">
+            Your E-Book Library
+          </h1>
+          <Link
+            to="/add-ebook"
+            className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
+          >
+            Add New E-Book
+          </Link>
         </header>
-        <div className="max-w-[300px] w-full space-y-6 px-4">
-          <nav className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
-            <p className="leading-6 text-gray-700 dark:text-gray-200 text-center">
-              What&apos;s next?
+
+        {ebooks.length === 0 ? (
+          <div className="flex flex-col items-center justify-center w-full py-16 text-center">
+            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
+              Your library is empty
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 max-w-md">
+              No books found in your library. Add some books to get started.
             </p>
-            <ul>
-              {resources.map(({ href, text, icon }) => (
-                <li key={href}>
-                  <a
-                    className="group flex items-center gap-3 self-stretch p-3 leading-normal text-blue-700 hover:underline dark:text-blue-500"
-                    href={href}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {icon}
-                    {text}
-                  </a>
-                </li>
-              ))}
-              <li className="self-stretch p-3 leading-normal">{message}</li>
-            </ul>
-          </nav>
-          <section className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
-            <Form
-              method="post"
-              className="space-y-4 w-full max-w-lg"
-              onSubmit={(event) => {
-                if (navigation.state === "submitting") {
-                  event.preventDefault();
-                }
-                const form = event.currentTarget;
-                requestAnimationFrame(() => {
-                  form.reset();
-                });
-              }}
-            >
-              <input
-                aria-label="Name"
-                name="name"
-                placeholder="Name"
-                required
-                className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
-              />
-              <input
-                aria-label="Email"
-                name="email"
-                type="email"
-                placeholder="your@email.com"
-                required
-                className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
-              />
-              <button
-                type="submit"
-                disabled={navigation.state === "submitting"}
-                className="w-full h-10 px-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
+            {ebooks.map((book) => (
+              <div
+                key={book.id}
+                className="flex flex-col rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow"
               >
-                Sign Guest Book
-              </button>
-              {guestBookError && (
-                <p className="text-red-500 dark:text-red-400">
-                  {guestBookError}
-                </p>
-              )}
-            </Form>
-            <ul className="text-center">
-              {<li className="p-3">{message}</li>}
-              {guestBook.map(({ id, name }) => (
-                <li key={id} className="p-3">
-                  {name}
-                </li>
-              ))}
-            </ul>
-          </section>
+                <div className="p-4 flex flex-col h-full">
+                  <h3 className="font-bold text-lg mb-1 text-gray-800 dark:text-white">
+                    {book.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                    by {book.authors}
+                  </p>
+                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-auto pt-2">
+                    Added: {book.createdAt ? new Date(book.createdAt).toLocaleDateString() : "Invalid Date"}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        <div className="text-sm text-gray-500 mt-8">
+          {message}
         </div>
       </div>
     </main>

@@ -2,5 +2,6 @@
 
 interface Env {
   VALUE_FROM_CLOUDFLARE: "Hello from Cloudflare";
-  DB: D1Database;
+  D1: D1Database;
+  R2: R2Bucket;
 }

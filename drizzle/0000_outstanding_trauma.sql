@@ -1,7 +1,8 @@
-CREATE TABLE `guestBook` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`name` text NOT NULL,
-	`email` text NOT NULL
+CREATE TABLE `ebooks` (
+	`id` text PRIMARY KEY NOT NULL,
+	`title` text NOT NULL,
+	`authors` text NOT NULL,
+	`created_at` text NOT NULL,
+	`updated_at` text NOT NULL,
+	`progress` text NOT NULL
 );
---> statement-breakpoint
-CREATE UNIQUE INDEX `guestBook_email_unique` ON `guestBook` (`email`);
