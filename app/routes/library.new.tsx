@@ -1,11 +1,12 @@
 import { Form, useActionData, useNavigate, redirect, useNavigation } from "react-router";
 import * as schema from "~/database/schema";
 import type { InferInsertModel } from "drizzle-orm";
-import type { Route } from "./+types/upload";
+import type { Route } from "./+types/library.new";
 import { nanoid } from "nanoid";
 import JSZip from "jszip";
 import TurndownService from "turndown";
 import { DOMParser, XMLSerializer } from 'xmldom';
+import { Navigation } from "~/components/Navigation";
 
 // Function to convert EPUB to text content
 async function convertEpubToText(fileBuffer: ArrayBuffer): Promise<{
@@ -58,9 +59,10 @@ async function convertEpubToText(fileBuffer: ArrayBuffer): Promise<{
     opfDoc.getElementsByTagName('dc:creator')[0]?.textContent ||
     'Unknown Author';
 
-  // Try to find cover image
-  let coverPath: string | undefined;
-  
+  // Get the spine items (reading order)
+  const spine = opfDoc.getElementsByTagName('spine')[0];
+  const itemrefs = spine.getElementsByTagName('itemref');
+
   // Get the manifest items (all content files)
   const manifest = opfDoc.getElementsByTagName('manifest')[0];
   const items = manifest.getElementsByTagName('item');
@@ -68,6 +70,9 @@ async function convertEpubToText(fileBuffer: ArrayBuffer): Promise<{
   // Create a map of id to href from the manifest
   const idToHref: Record<string, string> = {};
   const idToMediaType: Record<string, string> = {};
+  
+  // Try to find cover image
+  let coverPath: string | undefined;
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
@@ -84,7 +89,6 @@ async function convertEpubToText(fileBuffer: ArrayBuffer): Promise<{
     ) {
       if (mediaType?.startsWith('image/')) {
         coverPath = `${opfDirWithTrailingSlash}${href}`;
-        break;
       }
     }
 
@@ -95,10 +99,6 @@ async function convertEpubToText(fileBuffer: ArrayBuffer): Promise<{
       }
     }
   }
-
-  // Get the spine items (reading order)
-  const spine = opfDoc.getElementsByTagName('spine')[0];
-  const itemrefs = spine.getElementsByTagName('itemref');
 
   const turndownService = new TurndownService({
     headingStyle: 'atx',
@@ -115,10 +115,10 @@ async function convertEpubToText(fileBuffer: ArrayBuffer): Promise<{
       replacement: (content) => content,
     });
 
-  // Start building the text content
-  let textContent = `${title}\n\n`;
-  textContent += `By: ${creator}\n\n`;
-  textContent += `---\n\n`;
+  // Start building the markdown content
+  let markdownContent = `${title}\n\n`;
+  markdownContent += `By: ${creator}\n\n`;
+  markdownContent += `---\n\n`;
 
   // Process each spine item in reading order
   for (let i = 0; i < itemrefs.length; i++) {
@@ -139,22 +139,26 @@ async function convertEpubToText(fileBuffer: ArrayBuffer): Promise<{
         const contentFile = await contents.file(filePath)?.async('string');
 
         if (contentFile) {
-          // Parse the HTML content
-          const contentDoc = parser.parseFromString(contentFile, 'text/html');
-
-          // Extract the body content
-          const body = contentDoc.getElementsByTagName('body')[0];
-
-          if (body) {
-            // Convert HTML to string
-            const serializer = new XMLSerializer();
-            const bodyHtml = serializer.serializeToString(body);
-
-            // Convert HTML to Markdown
-            const markdown = turndownService.turndown(bodyHtml);
-
-            // Add to the markdown content
-            textContent += `${markdown}\n\n`;
+          try {
+            // Parse the HTML content
+            const contentDoc = parser.parseFromString(contentFile, 'text/html');
+            
+            // Extract the body content
+            const body = contentDoc.getElementsByTagName('body')[0];
+            
+            if (body) {
+              // Convert HTML to string
+              const serializer = new XMLSerializer();
+              const bodyHtml = serializer.serializeToString(body);
+              
+              // Convert HTML to Markdown
+              const markdown = turndownService.turndown(bodyHtml);
+              
+              // Add to the markdown content
+              markdownContent += `${markdown}\n\n`;
+            }
+          } catch (error) {
+            console.error(`Error processing ${filePath}:`, error);
           }
         }
       }
@@ -162,7 +166,7 @@ async function convertEpubToText(fileBuffer: ArrayBuffer): Promise<{
   }
 
   return {
-    text: textContent,
+    text: markdownContent,
     metadata: {
       title,
       creator,
@@ -174,7 +178,7 @@ async function convertEpubToText(fileBuffer: ArrayBuffer): Promise<{
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
   const ebookFile = formData.get("ebookFile") as File | null;
-  const r2 = context.cloudflare.env.R2;
+  const {R2} = context.cloudflare.env;
   
   if (!ebookFile) {
     return { error: "EPUB file is required" };
@@ -201,10 +205,10 @@ export async function action({ request, context }: Route.ActionArgs) {
     const coverKey = `${ebookId}.cover`;
     
     // Upload the EPUB file to R2
-    await r2.put(epubKey, fileBuffer);
+    await R2.put(epubKey, fileBuffer);
     
     // Upload the extracted text to R2
-    await r2.put(textKey, text);
+    await R2.put(textKey, text);
     
     // Upload the cover image if found
     if (metadata.coverPath) {
@@ -213,7 +217,7 @@ export async function action({ request, context }: Route.ActionArgs) {
         .then(zip => zip.file(metadata.coverPath!)?.async('arraybuffer'));
       
       if (coverFileData) {
-        await r2.put(coverKey, coverFileData);
+        await R2.put(coverKey, coverFileData);
       }
     }
     
@@ -230,7 +234,7 @@ export async function action({ request, context }: Route.ActionArgs) {
     // Save the ebook in the database
     await context.db.insert(schema.ebooks).values(newEbook).returning();
     
-    return redirect("/");
+    return redirect(`/library/${ebookId}/read`);
   } catch (error) {
     console.error("Error processing EPUB:", error);
     return { error: "Failed to process EPUB file. Please try again." };
@@ -251,8 +255,9 @@ export default function AddEbook() {
   const isSubmitting = navigation.state === "submitting";
   
   return (
-    <main className="flex flex-col items-center pt-16 pb-4 px-4">
-      <div className="flex-1 flex flex-col items-center gap-8 w-full max-w-md">
+    <main className="container mx-auto p-4">
+      <Navigation />
+      <div className="flex-1 flex flex-col items-center gap-8 w-full max-w-md mt-8">
         <header className="flex flex-col items-center gap-6">
           <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white">
             Add New E-Book
