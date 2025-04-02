@@ -1,9 +1,9 @@
 import { ReactReader } from "react-reader";
 import { useState } from "react";
-import type { Route } from "./+types/reader";
+import type { Route } from "./+types/library.$id.read";
 import { ebooks } from "~/database/schema";
 import { eq } from "drizzle-orm";
-import { Link } from "react-router";
+import { Navigation } from "~/components/Navigation";
 
 export async function loader({ params, context }: Route.LoaderArgs) {
   const { id } = params;
@@ -15,28 +15,19 @@ export async function loader({ params, context }: Route.LoaderArgs) {
   return { book };
 }
 
-export default function ReaderPage({
-  params,
-  loaderData,
-}: Route.ComponentProps) {
-  const { id } = params;
+export default function ReaderPage({loaderData}: Route.ComponentProps) {
   const { book } = loaderData;
-  const epubUrl = `/asset/${id}.epub`;
+  const {id, title} = book;
+  const url = `/library/${book.id}.epub`;
   const [location, setLocation] = useState<string | number>(0);
 
   return (
     <div className="container mx-auto p-4">
-      <nav className="p-4 bg-gray-100">
-        <div className="container mx-auto flex gap-4">
-          <Link to="/" className="hover:underline">
-            Back
-          </Link>
-        </div>
-      </nav>
+      <Navigation bookId={id} />
       <div className="w-full h-screen">
         <ReactReader
-          url={epubUrl}
-          title={book.title}
+          url={url}
+          title={title}
           location={location}
           locationChanged={setLocation}
         />

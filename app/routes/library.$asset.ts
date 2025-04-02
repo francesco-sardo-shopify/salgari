@@ -1,15 +1,15 @@
-import type { Route } from "./+types/asset";
+import type { Route } from "./+types/library.$asset";
 
 export async function loader({ params, context }: Route.LoaderArgs) {
-  const id = params.id;
-  if (!id) {
+  const {asset} = params;  
+  if (!asset) {
     return new Response("Not Found", { status: 404 });
   }
 
   try {
     // Get file from R2
-    const r2 = context.cloudflare.env.R2;
-    const file = await r2.get(id);
+    const {R2} = context.cloudflare.env;
+    const file = await R2.get(asset);
 
     if (!file) {
       return new Response("File not found", { status: 404 });
@@ -17,9 +17,9 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 
     // Determine content type based on file extension
     let contentType = "application/octet-stream";
-    if (id.endsWith(".epub")) contentType = "application/epub+zip";
-    if (id.endsWith(".txt")) contentType = "text/plain";
-    if (id.endsWith(".cover")) contentType = "image/jpeg";
+    if (asset.endsWith(".epub")) contentType = "application/epub+zip";
+    if (asset.endsWith(".txt")) contentType = "text/plain";
+    if (asset.endsWith(".cover")) contentType = "image/jpeg";
 
     // Return file with proper headers
     const headers = new Headers();
