@@ -6,5 +6,6 @@ export const ebooks = sqliteTable("ebooks", {
   authors: text("authors").notNull(),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
-  progress: text("progress").notNull(),
+  location: text("location").notNull(),
+  currentText: text("current_text").notNull(),
 });

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="15" fill="#4A5568" />
+  
+  <!-- Open book -->
+  <path d="M8 10C8 9.44772 8.44772 9 9 9H23C23.5523 9 24 9.44772 24 10V22C24 22.5523 23.5523 23 23 23H9C8.44772 23 8 22.5523 8 22V10Z" fill="#E2E8F0" />
+  
+  <!-- Book spine -->
+  <rect x="15.5" y="9" width="1" height="14" fill="#A0AEC0" />
+  
+  <!-- Book pages left -->
+  <path d="M9 10C9 9.44772 9.44772 9 10 9H15V23H10C9.44772 23 9 22.5523 9 22V10Z" fill="#F7FAFC" />
+  
+  <!-- Book pages right -->
+  <path d="M17 9H22C22.5523 9 23 9.44772 23 10V22C23 22.5523 22.5523 23 22 23H17V9Z" fill="#F7FAFC" />
+  
+  <!-- AI circuit pattern on right page -->
+  <path d="M18 12H22M18 14H20M20 16H22M18 18H22" stroke="#4299E1" stroke-width="0.5" stroke-linecap="round" />
+  <circle cx="19" cy="16" r="0.5" fill="#4299E1" />
+  <circle cx="21" cy="14" r="0.5" fill="#4299E1" />
+  <circle cx="19" cy="20" r="0.5" fill="#4299E1" />
+  <circle cx="21" cy="20" r="0.5" fill="#4299E1" />
+  
+  <!-- Text lines on left page -->
+  <path d="M10 12H14M10 14H14M10 16H14M10 18H14M10 20H14" stroke="#A0AEC0" stroke-width="0.5" stroke-linecap="round" />
+  
+  <!-- Brain icon representing AI -->
+  <path d="M20 19.5C21.1046 19.5 22 18.6046 22 17.5C22 16.3954 21.1046 15.5 20 15.5C18.8954 15.5 18 16.3954 18 17.5C18 18.6046 18.8954 19.5 20 19.5Z" fill="#4299E1" fill-opacity="0.3" stroke="#4299E1" stroke-width="0.5" />
+</svg> 

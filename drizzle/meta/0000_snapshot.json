@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "008ee181-36ed-4cc3-b593-481f13e2254a",
+  "id": "490184fd-c699-4a71-9f85-0e00556932a1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "ebooks": {
@@ -42,8 +42,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "progress": {
-          "name": "progress",
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "current_text": {
+          "name": "current_text",
           "type": "text",
           "primaryKey": false,
           "notNull": true,

@@ -230,7 +230,8 @@ export async function action({ request, context }: Route.ActionArgs) {
       authors: metadata.creator.trim(),
       createdAt: now,
       updatedAt: now,
-      progress: "0",
+      location: "0",
+      currentText: "",
     };
 
     // Save the ebook in the database

@@ -4,5 +4,6 @@ CREATE TABLE `ebooks` (
 	`authors` text NOT NULL,
 	`created_at` text NOT NULL,
 	`updated_at` text NOT NULL,
-	`progress` text NOT NULL
+	`location` text NOT NULL,
+	`current_text` text NOT NULL
 );

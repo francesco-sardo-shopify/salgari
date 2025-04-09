@@ -1,5 +1,5 @@
 import { ReactReader } from "react-reader";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import type { Route } from "./+types/library.$id.read";
 import { ebooks } from "~/database/schema";
 import { eq } from "drizzle-orm";
@@ -29,18 +29,16 @@ export async function action({ params, context, request }: Route.ActionArgs) {
   const { id } = params;
   const { db } = context;
   let formData = await request.formData();
-  let progress = formData.get("progress");
+  let location = formData.get("location") as string;
+  let currentText = formData.get("currentText") as string;
 
-  if (!progress) {
+  if (!location || !currentText) {
     return new Response("Bad Request", { status: 400 });
   }
 
   await db
     .update(ebooks)
-    .set({
-      progress: progress!.toString(),
-      updatedAt: new Date().toISOString(),
-    })
+    .set({ location, currentText, updatedAt: new Date().toISOString() })
     .where(eq(ebooks.id, id));
 
   return new Response("OK", { status: 200 });
@@ -48,14 +46,51 @@ export async function action({ params, context, request }: Route.ActionArgs) {
 
 export default function ReaderPage({ loaderData }: Route.ComponentProps) {
   const { book } = loaderData;
-  const { id, title, progress } = book;
-  const [location, setLocation] = useState<string | number>(progress || 0);
+  const { id, title, location: savedLocation } = book;
+  const [location, setLocation] = useState<string | number>(savedLocation || 0);
   const fetcher = useFetcher();
+  const renditionRef = useRef<any>(null);
+
+  const extractCurrentText = () => {
+    const rendition = renditionRef.current;    
+    if (!rendition) return "";  
+
+    const chunks: string[] = [];    
+    rendition.views().forEach((view: any) => {
+      const { manager } = rendition;
+      const { mapping } = manager;
+      const { layout } = mapping;
+      const { divisor, gap, columnWidth } = layout;
+      
+      const container = manager.container.getBoundingClientRect();
+      const position = view.position();
+      const offset = container.left;
+      const viewStart = offset - position.left;
+      
+      Array.from({ length: divisor }, (_, i) => {
+        const start = viewStart + (columnWidth + gap) * i;
+        const end = start + columnWidth + gap;
+        const startRange = mapping.findStart(view.document.body, start, end);
+        const endRange = mapping.findEnd(view.document.body, start, end);
+        const range = document.createRange();
+        range.setStart(startRange.startContainer, startRange.startOffset);
+        range.setEnd(endRange.endContainer, endRange.endOffset);
+        chunks.push(range.toString());
+      });
+    });
+
+    return chunks.join() as string;
+  };
 
   const handleLocationChanged = async (newLocation: string | number) => {
     setLocation(newLocation);
+    const newCurrentText = extractCurrentText();    
+    
     fetcher.submit(
-      { progress: newLocation.toString() },
+      { 
+        location: newLocation.toString(), 
+        currentText: newCurrentText
+      },
       { action: `/library/${id}/read`, method: "post" }
     );
   };
@@ -69,6 +104,7 @@ export default function ReaderPage({ loaderData }: Route.ComponentProps) {
           title={title}
           location={location}
           locationChanged={handleLocationChanged}
+          getRendition={(rendition) => { renditionRef.current = rendition }}
         />
       </div>
     </div>
