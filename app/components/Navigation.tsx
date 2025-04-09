@@ -1,30 +1,27 @@
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 
-interface NavigationProps {
-  bookId?: string;
-}
+export function Navigation() {
+  const location = useLocation();
+  const isReadPage = location.pathname.endsWith("/read");
+  const isChatPage = location.pathname.endsWith("/chat");
 
-export function Navigation({ bookId }: NavigationProps) {
   return (
-    <nav className="p-4 bg-gray-100">
-      <div className="container mx-auto flex gap-4">
-        <Link to="/" className="hover:underline">
+    <nav className="bg-gray-100 dark:bg-gray-800 shadow-sm">
+      <div className="container mx-auto px-4 py-3 flex gap-4 items-center">
+        <Link to="/library" className="font-medium text-gray-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
           Home
         </Link>
-        <Link to="/library" className="hover:underline">
-          Library
-        </Link>
-        {bookId && (
-          <>
-            <Link to={`/library/${bookId}/read`} className="hover:underline">
-              Read
-            </Link>
-            <Link to={`/library/${bookId}/chat`} className="hover:underline">
-              Chat
-            </Link>
-          </>
+        {isChatPage && (
+          <Link to={`../read`} relative="path" className="font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+            Switch to Read
+          </Link>
+        )}
+        {isReadPage && (
+          <Link to={`../chat`} relative="path" className="font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+            Switch to Chat
+          </Link>
         )}
       </div>
     </nav>
   );
-} 
+}

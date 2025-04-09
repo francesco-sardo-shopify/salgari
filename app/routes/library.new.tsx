@@ -257,65 +257,67 @@ export default function AddEbook() {
   const isSubmitting = navigation.state === "submitting";
 
   return (
-    <main className="container mx-auto p-4">
+    <div className="flex flex-col h-screen">
       <Navigation />
-      <div className="flex-1 flex flex-col items-center gap-8 w-full max-w-md mt-8">
-        <header className="flex flex-col items-center gap-6">
-          <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white">
-            Add New E-Book
-          </h1>
-        </header>
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="mx-auto max-w-md">
+          <header className="mb-8">
+            <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white">
+              Add New E-Book
+            </h1>
+          </header>
 
-        <Form
-          method="post"
-          className="w-full space-y-6"
-          encType="multipart/form-data"
-        >
-          <div className="space-y-2">
-            <label
-              htmlFor="ebookFile"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Upload EPUB File
-            </label>
-            <input
-              type="file"
-              id="ebookFile"
-              name="ebookFile"
-              accept=".epub"
-              required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-            />
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Upload an EPUB file. Title and author information will be
-              extracted automatically.
-            </p>
-          </div>
+          <Form
+            method="post"
+            className="w-full space-y-6"
+            encType="multipart/form-data"
+          >
+            <div className="space-y-2">
+              <label
+                htmlFor="ebookFile"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Upload EPUB File
+              </label>
+              <input
+                type="file"
+                id="ebookFile"
+                name="ebookFile"
+                accept=".epub"
+                required
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+              />
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Upload an EPUB file. Title and author information will be
+                extracted automatically.
+              </p>
+            </div>
 
-          {actionData?.error && (
-            <div className="text-red-500 text-sm mt-2">{actionData.error}</div>
-          )}
+            {actionData?.error && (
+              <div className="text-red-500 text-sm mt-2">{actionData.error}</div>
+            )}
 
-          <div className="flex gap-4 pt-2">
-            <button
-              type="button"
-              onClick={() => navigate("/")}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`flex-1 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 ${
-                isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-              }`}
-            >
-              {isSubmitting ? "Processing..." : "Upload E-Book"}
-            </button>
-          </div>
-        </Form>
+            <div className="flex gap-4 pt-2">
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`flex-1 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 ${
+                  isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                }`}
+              >
+                {isSubmitting ? "Processing..." : "Upload E-Book"}
+              </button>
+            </div>
+          </Form>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }
